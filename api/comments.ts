@@ -4,7 +4,7 @@ import { CommentType, PostType } from '../interfaces';
 export const CommentsAPI = {
 
 	async addComment(postId: PostType['id'], text: CommentType['body']): Promise<CommentType> {
-		const { data: comment } = await instance.post('posts', {
+		const { data: comment } = await instance.post('comments', {
 			postId,
 			body: text,
 		});

@@ -21,4 +21,8 @@ export const PostsAPI = {
 		return post;
 	},
 
+	async deletePost(postId: PostType['id']) {
+		await instance.delete(`posts/${postId}`)
+	}
+
 };

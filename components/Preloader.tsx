@@ -1,11 +1,7 @@
-export default {};
+const Preloader = () => {
+    return (
+        <div><img src='/preloader.svg'/></div>
+    )
+};
 
-// import preloader from '../images/preloader.svg';
-//
-// const Preloader = () => {
-//     return (
-//         <div><img src={preloader}/></div>
-//     )
-// };
-//
-// export default Preloader;
+export default Preloader;

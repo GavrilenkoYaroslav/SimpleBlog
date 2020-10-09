@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import Layout from '../../components/Layout';
 import { connect } from 'react-redux';
-import { addPost, InitialState } from '../../redux/post-reducer';
+import { addPost } from '../../redux/post-reducer';
+import Preloader from "../../components/Preloader";
 
-type NewPostPageProps = Pick<InitialState, 'inProgress'> & {
+type NewPostPageProps =  {
 	addPost: typeof addPost,
 };
 
@@ -11,6 +12,7 @@ const NewPostPage = (props: NewPostPageProps) => {
 
 	const [ postData, setPostData ] = useState('');
 	const [ titleData, setTitleData ] = useState('');
+	const [ inProgress, setInProgress] = useState(false);
 
 	const onChangeTitle = (e: any) => {
 		setTitleData(e.target.value);
@@ -30,7 +32,9 @@ const NewPostPage = (props: NewPostPageProps) => {
 			alert('Please enter post message');
 			return;
 		}
-		props.addPost(titleData, postData);
+		setInProgress(true);
+		await props.addPost(titleData, postData);
+		setInProgress(false);
 		setTitleData('');
 		setPostData('');
 
@@ -39,7 +43,7 @@ const NewPostPage = (props: NewPostPageProps) => {
 	return (
 		<Layout>
 
-			{props.inProgress ? <div>Loading...</div> : <>
+			{inProgress ? <Preloader/>: <>
 
 				<div>
 					<input placeholder={'Enter title'} onChange={onChangeTitle} value={titleData}/>
@@ -59,10 +63,9 @@ const NewPostPage = (props: NewPostPageProps) => {
 	);
 };
 
-const mapStateToProps = (state: InitialState) => {
-	return {
-		inProgress: state.inProgress,
-	};
+
+const mapStateToProps = () => {
+	return {};
 };
 
 

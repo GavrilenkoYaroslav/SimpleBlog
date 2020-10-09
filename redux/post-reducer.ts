@@ -1,25 +1,24 @@
 import {HYDRATE} from "next-redux-wrapper";
-import { AnyAction, Dispatch } from 'redux';
-import { PostType } from '../interfaces';
-import { PostsAPI } from '../api/posts';
+import {AnyAction, Dispatch} from 'redux';
+import {CommentType, PostType} from '../interfaces';
+import {PostsAPI} from '../api/posts';
+import {CommentsAPI} from "../api/comments";
 
 const SET_SERVER_POSTS = 'SET_SERVER_POSTS';
 const SET_SERVER_POST = 'SET_SERVER_POST';
-const SET_PROGRESS = 'SET_PROGRESS';
+const SET_COMMENT = 'SET_COMMENT';
 
 export type InitialState = {
     posts: PostType[];
-    inProgress: boolean;
     post?: PostType | null;
 }
 
 const initialState: InitialState = {
-    inProgress: false,
     posts: [],
     post: null,
 };
 
-export const post_reducer = (state = initialState, action:AnyAction): InitialState=> {
+export const post_reducer = (state = initialState, action: AnyAction): InitialState => {
 
     switch (action.type) {
         case HYDRATE:
@@ -33,38 +32,50 @@ export const post_reducer = (state = initialState, action:AnyAction): InitialSta
             return {...state, post: action.payload};
         }
 
-        case SET_PROGRESS: {
-            return {...state, inProgress: action.payload}
+        case SET_COMMENT: {
+            return {...state, post: {...state.post!, comments: [...state.post!.comments, action.payload]}}
         }
 
-        default : {return state}
+        default : {
+            return state
+        }
     }
 };
 
 
 export const setServerPostsAC = (data: PostType[]) => {
-    return { type: SET_SERVER_POSTS, payload: data };
+    return {type: SET_SERVER_POSTS, payload: data};
 };
 
 export const setServerPostAC = (data: PostType) => {
-    return { type: SET_SERVER_POST, payload: data };
+    return {type: SET_SERVER_POST, payload: data};
 };
 
-export const setProgressAC = (progress: boolean) => {
-    return { type: SET_PROGRESS, payload: progress };
+
+export const setCommentAC = (data: CommentType) => {
+    return {type: SET_COMMENT, payload: data};
 };
 
-export const addPost = (titleData: PostType['title'], postData: PostType['body']) => async (dispatch: Dispatch ) => {
+
+export const addPost = (titleData: PostType['title'], postData: PostType['body']) => async () => {
     try {
-        dispatch(setProgressAC(true));
 
         await PostsAPI.addPost(titleData, postData);
 
         alert('Your post added');
-    } catch ( e ) {
+    } catch (e) {
         alert(e.message);
-    } finally {
-        dispatch(setProgressAC(false));
     }
 
-}
+};
+
+export const addComment = (id: PostType['id'], comment: CommentType['body']) => async (dispatch: Dispatch) => {
+    try {
+        const newComment = await CommentsAPI.addComment(id, comment);
+        dispatch(setCommentAC(newComment))
+
+    } catch (e) {
+        alert(e.message);
+    }
+
+};
