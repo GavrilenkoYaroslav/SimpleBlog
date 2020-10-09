@@ -1,35 +1,38 @@
-import {useState} from 'react';
-import Layout from '../../components/Layout';
+import React, { useState } from 'react';
+import Router from 'next/router';
 import { connect } from 'react-redux';
 import { addPost } from '../../redux/post-reducer';
-import Preloader from "../../components/Preloader";
+import Preloader from '../../components/Preloader';
+import { message, Input, Button, Row, Col } from 'antd';
 
-type NewPostPageProps =  {
-	addPost: typeof addPost,
+const { TextArea } = Input;
+
+type NewPostPageProps = {
+	addPost: Function
 };
 
 const NewPostPage = (props: NewPostPageProps) => {
 
 	const [ postData, setPostData ] = useState('');
 	const [ titleData, setTitleData ] = useState('');
-	const [ inProgress, setInProgress] = useState(false);
+	const [ inProgress, setInProgress ] = useState(false);
 
-	const onChangeTitle = (e: any) => {
+	const onChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setTitleData(e.target.value);
 	};
 
-	const onChangePost = (e: any) => {
+	const onChangePost = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 		setPostData(e.target.value);
 	};
 
 	const onClickButton = async () => {
 		if ( !titleData ) {
-			alert('Please enter title');
+			message.warning('Please enter title');
 			return;
 		}
 
 		if ( !postData ) {
-			alert('Please enter post message');
+			message.warning('Please enter post message');
 			return;
 		}
 		setInProgress(true);
@@ -41,31 +44,39 @@ const NewPostPage = (props: NewPostPageProps) => {
 	};
 
 	return (
-		<Layout>
+		<>
+			<Button onClick={() => {
+				Router.push('/');
+			}} type="primary" style={{ margin: 20 }}>Go to all posts</Button>
 
-			{inProgress ? <Preloader/>: <>
+			{inProgress ? <Row>
+				<Col span={24} offset={12}>
+					<Preloader/>
+				</Col>
+			</Row> : <></>}
 
-				<div>
-					<input placeholder={'Enter title'} onChange={onChangeTitle} value={titleData}/>
-				</div>
+			<Row>
+				<Col span={12} offset={6}>
 
-				<div>
-					<textarea placeholder={'Your post'} onChange={onChangePost} value={postData}/>
-				</div>
+					<Row>
+						<Col span={24}>
+							<div>
+								<Input placeholder={'Enter title'} onChange={onChangeTitle} value={titleData}/>
+							</div>
 
-				<div>
-					<button onClick={onClickButton}>click</button>
-				</div>
-			</>
-			}
+							<TextArea placeholder={'Your post'} onChange={onChangePost} value={postData} rows={4}/>
 
-		</Layout>
+							<Row justify={'end'}>
+								<Button onClick={onClickButton} type="primary" style={{ marginTop: 20 }}>Add post</Button>
+							</Row>
+						</Col>
+					</Row>
+
+				</Col>
+			</Row>
+
+		</>
 	);
-};
-
-
-const mapStateToProps = () => {
-	return {};
 };
 
 
@@ -74,4 +85,4 @@ const mapDispatchToProps = {
 };
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewPostPage);
+export default connect(null, mapDispatchToProps)(NewPostPage);

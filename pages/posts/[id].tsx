@@ -1,79 +1,106 @@
 import { GetServerSideProps } from 'next';
 import { connect } from 'react-redux';
-import Layout from '../../components/Layout';
 import { wrapper } from '../../redux/store';
-import {setServerPostAC, InitialState, addComment} from '../../redux/post-reducer';
+import { setServerPostAC, InitialState, addComment } from '../../redux/post-reducer';
 import { PostsAPI } from '../../api/posts';
 import _ from 'lodash';
-import Comment from "../../components/Comment";
-import CreateComment from "../../components/CreateComment";
-import Preloader from "../../components/Preloader";
-import {useState} from "react";
-import Router from "next/router";
+import Comment from '../../components/Comment';
+import CreateComment from '../../components/CreateComment';
+import Preloader from '../../components/Preloader';
+import { useState } from 'react';
+import Router from 'next/router';
+import { Row, Col, Card, Button, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
-type PostPageProps = Pick<InitialState, 'post'> &{
-	addComment: typeof addComment
+const { confirm } = Modal;
+
+
+type PostPageProps = Pick<InitialState, 'post'> & {
+	addComment: Function
 };
 
 const PostPage = (props: PostPageProps) => {
 	const { post } = props;
-    const [inProgress, setInProgress] = useState(false);
+	const [ inProgress, setInProgress ] = useState(false);
 
-	if (!post) {
-		return <Layout/>
+	if ( !post ) {
+		return <Preloader/>;
 	}
 
 
+	const onDeleteClick = async () => {
+		confirm({
+			title: 'Do you Want to delete this post?',
+			icon: <ExclamationCircleOutlined/>,
+			content: '',
+			async onOk() {
+				setInProgress(true);
+				await PostsAPI.deletePost(post.id);
+				setInProgress(false);
+				Router.push('/');
+			},
+			onCancel() {
+				return;
+			},
+		});
 
-    const onDeleteClick = async () => {
-        if(!confirm('You sure?')) {
-            return;
-        }
-        setInProgress(true);
-        await PostsAPI.deletePost(post.id);
-        setInProgress(false);
-        Router.push('/')
-    };
-
+	};
 
 	return (
-		<Layout>
+		<>
+			<Row justify={'center'} style={{ marginTop: 20 }}>
+				<Col span={4}>
+					<Button onClick={() => {
+						Router.push('/');
+					}} block>Go back</Button>
+				</Col>
+				<Col span={4}>
+					<Button onClick={() => {
+						Router.push('/posts/new');
+					}} block>Create new post</Button>
+				</Col>
+			</Row>
 
-			<h1>{post.title}</h1>
-			<div>{post.body}</div>
+			<Row>
+				<Col span={12} offset={6}>
+					<Card title={<h1>{post.title}</h1>} bordered={false}>
+						<p>{post.body}</p>
+					</Card>
 
-            {inProgress?<Preloader/>:<></>}
-			<button onClick={ onDeleteClick }>Delete this post</button>
+					<Row justify="end">
+						{inProgress ? <Preloader/> : <></>}
+						<Button onClick={onDeleteClick} danger>Delete this post</Button>
+					</Row>
 
-			<CreateComment id={post.id} addComment={props.addComment}/>
-
-
-			{
-				_.map(post.comments, comment => <Comment key={comment.id} body={comment.body}/>)
-			}
-
-
-		</Layout>
+					<Row>
+						<Col span={24}>
+							<h3>Comments:</h3>
+							<CreateComment id={post.id} addComment={props.addComment}/>
+							{
+								_.map([ ...post.comments ].reverse(), comment => <Comment key={comment.id} body={comment.body}/>)
+							}
+						</Col>
+					</Row>
+				</Col>
+			</Row>
+		</>
 	);
 };
 
 const mapStateToProps = (state: InitialState) => {
 	return {
-		post: state.post
+		post: state.post,
 	};
 };
 
 const mapDispatchToProps = {
-   addComment
+	addComment,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(PostPage);
 
 
-
-
 export const getServerSideProps: GetServerSideProps = wrapper.getServerSideProps(
-
 	async ({ store, query }) => {
 
 		const postId = query.id as string;
@@ -84,6 +111,5 @@ export const getServerSideProps: GetServerSideProps = wrapper.getServerSideProps
 		} catch ( e ) {
 			console.error(e);
 		}
-
 	},
 );

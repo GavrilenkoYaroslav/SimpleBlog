@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { InitialState } from '../redux/post-reducer';
+import { Card } from 'antd';
+
+const { Meta } = Card;
 
 type PostProps = Pick<InitialState, 'post'>;
 
@@ -13,11 +16,14 @@ const Post = (props: PostProps) => {
 	return (
 		<>
 			<Link href={`/posts/${post.id}`}>
-				<a>
-					<h1>{post.title}</h1>
-				</a>
+				<Card
+					hoverable
+					style={{ width: 360 }}
+					cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png"/>}
+				>
+					<Meta title={post.title} description={post.body}/>
+				</Card>
 			</Link>
-			<div>{post.body}</div>
 		</>
 	);
 };
